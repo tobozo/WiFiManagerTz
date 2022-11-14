@@ -1,15 +1,43 @@
-
+/*\
+ *
+ * WiFiManagerTz
+ *
+ * Copyright (c) 2022 tobozo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+\*/
 
 #include <WiFiManager.h>
 #include <WiFiManagerTz.h>
 
+
 WiFiManager wifiManager;
+
 
 void setupWiFi()
 {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   Serial.println(WiFi.macAddress());
-  WiFi.begin();
+
+  WiFi.begin(); // or
+
   while(WiFi.status() != WL_CONNECTED){
     Serial.print(".");
     delay(100);
@@ -23,7 +51,7 @@ void setup()
   delay(1000);
   Serial.println("Welcome to the tzupdate example");
 
-  setupWiFi();
+  //setupWiFi();
 
   // attach NTP/TZ/Clock-setup page to the WiFi Manager
   WiFiManagerNS::init( &wifiManager );
@@ -35,7 +63,13 @@ void setup()
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(60);
 
-  wifiManager.startWebPortal();
+  //wifiManager.startWebPortal();
+
+  if(wifiManager.autoConnect("AutoConnectAP")){
+    Serial.println("connected...yeey :)");
+  }else {
+    Serial.println("Configportal running");
+  }
 
   Serial.println("local ip");
   Serial.println(WiFi.localIP());

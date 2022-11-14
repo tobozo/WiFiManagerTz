@@ -38,17 +38,17 @@ namespace NTP
     const char* addr;
   };
 
-  //void setTimezone( float tz );
-  void setDst( bool set );
-  bool setServer( uint8_t id );
-  void loadPrefServer();
-  void enable();
-  void loadPrefs();
-  void setSyncDelay( unsigned int minutes );
 
+  void setSyncDelay( unsigned int minutes );
+  unsigned int getSyncDelay();
+
+  void loadPrefServer();
+  void loadPrefs();
+
+  bool setServer( uint8_t id );
   uint8_t getServerId();
   String server();
-  unsigned int getSyncDelay();
+
 
   // TODO: extend this list
   const Server Servers[] =

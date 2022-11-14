@@ -65,13 +65,6 @@ namespace NTP
   }
 
 
-  void setDst( bool set )
-  {
-    daysavetime = set ? 1 : 0;
-    prefs::setUChar( NVS_DST_KEY, daysavetime );
-  }
-
-
   bool setServer( uint8_t id )
   {
     size_t servers_count = sizeof( Servers ) / sizeof( Server );
