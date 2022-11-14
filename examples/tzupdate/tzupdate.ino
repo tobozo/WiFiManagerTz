@@ -40,6 +40,8 @@ void setup()
   // attach NTP/TZ/Clock-setup page to the WiFi Manager
   WiFiManagerNS::init( &wifiManager );
 
+  //wifiManager.resetSettings();
+
   // /!\ make sure "custom" is listed there as it's required to pull the "Setup Clock" button
   std::vector<const char *> menu = {"wifi", "info", "custom", "param", "sep", "restart", "exit"};
   wifiManager.setMenu(menu);
@@ -60,5 +62,5 @@ void setup()
 
 void loop()
 {
-  //wifiManager.process();
+  wifiManager.process();
 }
