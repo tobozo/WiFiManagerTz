@@ -31,27 +31,11 @@
 WiFiManager wifiManager;
 
 
-void setupWiFi()
-{
-  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-  Serial.println(WiFi.macAddress());
-
-  WiFi.begin(); // or
-
-  while(WiFi.status() != WL_CONNECTED){
-    Serial.print(".");
-    delay(100);
-  }
-}
-
-
 void setup()
 {
   Serial.begin(115200);
   delay(1000);
   Serial.println("Welcome to the tzupdate example");
-
-  //setupWiFi();
 
   // attach NTP/TZ/Clock-setup page to the WiFi Manager
   WiFiManagerNS::init( &wifiManager );
@@ -61,11 +45,9 @@ void setup()
   wifiManager.setMenu(menu);
 
   wifiManager.setConfigPortalBlocking(false);
-  wifiManager.setConfigPortalTimeout(60);
+  wifiManager.setConfigPortalTimeout(600);
 
-  //wifiManager.startWebPortal();
-
-  if(wifiManager.autoConnect("AutoConnectAP")){
+  if(wifiManager.autoConnect("AutoConnectAP", "12345678")){
     Serial.println("connected...yeey :)");
   }else {
     Serial.println("Configportal running");
@@ -78,5 +60,5 @@ void setup()
 
 void loop()
 {
-  wifiManager.process();
+  //wifiManager.process();
 }
