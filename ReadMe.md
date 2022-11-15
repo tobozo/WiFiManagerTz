@@ -6,6 +6,7 @@ Adds NTP/TimeZone and Clock tools to @tzapu's [WiFiManager](https://github.com/t
 
 ![](assets/screenshot.png)
 
+
 ## Integration
 
 
@@ -29,6 +30,17 @@ void setup()
 }
 
 ```
+
+## Motivation
+
+I made this library in order to learn how to properly use the WiFiManager, and I'm still learning, so feel free to report any WTF :-)
+
+## Roadmap
+
+  - Add more examples
+  - Implement minimal logic for external RTC modules coupling
+  - Make the Time Setup page skinnable
+  - ESP8266 support
 
 
 ## Dependencies
