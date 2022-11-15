@@ -24,12 +24,75 @@
  *
 \*/
 
-
 #include "prefs.hpp"
 #include <TZ.hpp>
 
 namespace TZ
 {
+
+  constexpr const char* prefName = "TZNAME";
+  const char* defaultTzName = "UTC0";
+  char tzName[255];
+
+
+  size_t zones()
+  {
+    return count;
+  }
+
+
+  void loadPrefs()
+  {
+    prefs::get( prefName, tzName, 255, defaultTzName );
+  }
+
+
+  void setTzName( const char* name )
+  {
+    if( strcmp( tzName, name ) != 0 ) {
+      prefs::set( prefName, name, strlen(name) );
+    }
+    snprintf( tzName, 254, "%s", name );
+  }
+
+
+  // see https://github.com/marciot/esp32-hacks
+
+  const char *getLocation(int &index, const char *prefix )
+  {
+    if(index >= count) return nullptr;
+    if(prefix) {
+      const int len = strlen(prefix);
+      // Skip non-matching locations
+      while(strncmp(timezones[index], prefix, len)) {
+        index += 2;
+        if (index >= count) return nullptr;
+      }
+    }
+    const char *res = timezones[index];
+    index += 2;
+    return res;
+  }
+
+
+  const char* getTzByLocation(const char* cLocation)
+  {
+    for(int i = 0; i < count; i += 2) {
+      if(strcmp(cLocation,timezones[i]) == 0)
+        return timezones[i+1];
+    }
+    return (const char *)defaultTzName;
+  }
+
+
+  void configTimeWithTz( const char* tz, const char* ntp_addr )
+  {
+    log_d("tzCstr=%s, server=%s", tz, ntp_addr );
+    configTime(0, 0, ntp_addr, "pool.ntp.org" );
+    setenv("TZ", tz, 1);
+    tzset();
+  }
+
 
   const char *timezones[] = {
     "Africa/Abidjan","GMT0",
@@ -495,74 +558,7 @@ namespace TZ
     "Pacific/Wallis","<+12>-12"
   };
 
-  constexpr const size_t count = sizeof(timezones)/sizeof(timezones[0]);
-  constexpr const char* prefName = "TZNAME";
-  const char* defaultTzName = "UTC0";
-  char tzName[255];
-
-
-  size_t zones()
-  {
-    return count;
-  }
-
-
-  void setTzName( const char* name )
-  {
-    if( strcmp( tzName, name ) != 0 ) {
-      prefs::set( prefName, name, strlen(name) );
-    }
-    snprintf( tzName, 254, "%s", name );
-  }
-
-
-  const char *getLocation(int &index, const char *prefix )
-  {
-    if(index >= count) return nullptr;
-    if(prefix) {
-      const int len = strlen(prefix);
-      // Skip non-matching locations
-      while(strncmp(timezones[index], prefix, len)) {
-        index += 2;
-        if (index >= count) return nullptr;
-      }
-    }
-    const char *res = timezones[index];
-    index += 2;
-    return res;
-  }
-
-
-  String getTzByLocation(String location)
-  {
-    const char *cLocation = location.c_str();
-    for(int i = 0; i < count; i += 2) {
-      if(strcmp(cLocation,timezones[i]) == 0)
-        return timezones[i+1];
-    }
-    return String(defaultTzName);
-  }
-
-
-  void configTimeWithTz(String tz, String ntp_addr)
-  {
-    const char* tzCstr = tz.c_str();
-    log_d("tzCstr=%s, server=%s", tzCstr, ntp_addr.c_str() );
-    configTime(0, 0, ntp_addr.c_str(), "pool.ntp.org" );
-    setenv("TZ", tzCstr, 1);
-
-    //configTime(0, 0, "europe.pool.ntp.org" );
-    //setenv("TZ", "CET-1CEST,M3.5.0/02,M10.5.0/03", 1);
-    tzset();
-
-    //setTzName( tzCstr );
-  }
-
-
-  void loadPrefs()
-  {
-    prefs::get( prefName, tzName, 255, defaultTzName );
-  }
+  const size_t count = sizeof(timezones)/sizeof(timezones[0]);
 
 
 };

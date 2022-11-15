@@ -32,12 +32,12 @@ namespace TZ
 {
   void loadPrefs();
   extern char tzName[255];
+  extern const size_t count;
   void setTzName( const char* name );
   extern const char* defaultTzName;
   extern const char *timezones[];
   size_t zones();// count;
-  const char *getLocation(int &index, const char *prefix = 0);
-  String getTzByLocation(String location);
-  // From https://werner.rothschopf.net/microcontroller/202103_arduino_esp32_ntp_en.htm
-  void configTimeWithTz(String tz, String ntp_addr);
+  const char* getLocation(int &index, const char *prefix = 0);
+  const char* getTzByLocation(const char* location);
+  void configTimeWithTz(const char* tz, const char* ntp_addr);
 };

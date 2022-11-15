@@ -87,7 +87,7 @@ namespace NTP
   }
 
 
-  String server()
+  const char* server()
   {
     uint8_t server_id = getServerId();
     uint8_t servers_count = sizeof(Servers)/sizeof(Server);
@@ -95,7 +95,7 @@ namespace NTP
       // uh-oh, server list is messed up, return default
       return "pool.ntp.org";
     }
-    return String( Servers[getServerId()].addr );
+    return Servers[getServerId()].addr;
   }
 
 

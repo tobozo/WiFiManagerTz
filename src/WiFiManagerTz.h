@@ -14,7 +14,7 @@ namespace WiFiManagerNS
 
   bool NTPEnabled = false; // overriden by prefs
   bool DSTEnabled = true;
-  String PixieConfHTML;
+  String TimeConfHTML;
   char systime[64];
 
   constexpr const char* menuhtml = "<form action='/custom' method='get'><button>Setup Clock</button></form><br/>\n";
@@ -39,8 +39,8 @@ namespace WiFiManagerNS
 
   void configTime()
   {
-    String tz = TZ::getTzByLocation( String(TZ::tzName) );
-    Serial.printf("Setting up time: NTPServer=%s, TZ-Name=%s, TZ=%s\n", NTP::server().c_str(), TZ::tzName, tz.c_str() );
+    const char* tz = TZ::getTzByLocation( TZ::tzName );
+    Serial.printf("Setting up time: NTPServer=%s, TZ-Name=%s, TZ=%s\n", NTP::server(), TZ::tzName, tz );
     TZ::configTimeWithTz( tz, NTP::server() );
   }
 
@@ -131,86 +131,88 @@ namespace WiFiManagerNS
   {
     Serial.println("[HTTP] handle route Custom");
 
-    PixieConfHTML = "";
-    PixieConfHTML += getTemplate(HTML_HEAD_START);
-    PixieConfHTML.replace(FPSTR(T_v), "Timezone setup");
-    PixieConfHTML += getTemplate(HTML_SCRIPT);
+    TimeConfHTML = "";
+    TimeConfHTML += getTemplate(HTML_HEAD_START);
+    TimeConfHTML.replace(FPSTR(T_v), "Timezone setup");
+    TimeConfHTML += getTemplate(HTML_SCRIPT);
 
-    PixieConfHTML += "<script>";
-    PixieConfHTML += "window.addEventListener('load', function() { var now = new Date(); var offset = now.getTimezoneOffset() * 60000; var adjustedDate = new Date(now.getTime() - offset);";
-    PixieConfHTML += "document.getElementById('set-time').value = adjustedDate.toISOString().substring(0,16); });";
-    PixieConfHTML += "</script>";
+    TimeConfHTML += "<script>";
+    TimeConfHTML += "window.addEventListener('load', function() { var now = new Date(); var offset = now.getTimezoneOffset() * 60000; var adjustedDate = new Date(now.getTime() - offset);";
+    TimeConfHTML += "document.getElementById('set-time').value = adjustedDate.toISOString().substring(0,16); });";
+    TimeConfHTML += "</script>";
 
-    PixieConfHTML += getTemplate(HTML_STYLE);
-    PixieConfHTML += "<style> input[type='checkbox'][name='use-ntp-server']:not(:checked) ~.collapsable { display:none; }</style>";
-    PixieConfHTML += "<style> input[type='checkbox'][name='use-ntp-server']:checked       ~.collapsed   { display:none; }</style>";
-    PixieConfHTML += getTemplate(HTML_HEAD_END);
-    PixieConfHTML.replace(FPSTR(T_c), "invert"); // add class str
-    PixieConfHTML += "<h1>Time Settings</h1>";
+    TimeConfHTML += getTemplate(HTML_STYLE);
+    TimeConfHTML += "<style> input[type='checkbox'][name='use-ntp-server']:not(:checked) ~.collapsable { display:none; }</style>";
+    TimeConfHTML += "<style> input[type='checkbox'][name='use-ntp-server']:checked       ~.collapsed   { display:none; }</style>";
+    TimeConfHTML += getTemplate(HTML_HEAD_END);
+    TimeConfHTML.replace(FPSTR(T_c), "invert"); // add class str
+    TimeConfHTML += "<h1>Time Settings</h1>";
 
     String systimeStr = getSystimeStr();
 
-    PixieConfHTML += "<label for='ntp-server'>System Time ";
+    TimeConfHTML += "<label for='ntp-server'>System Time ";
 
-    PixieConfHTML += "<input readonly style=width:auto name='system-time' type='datetime-local' value='"+systimeStr+"'>";
-    PixieConfHTML += " <button onclick=location.reload() style=width:auto type=button> Refresh </button></label><br>";
+    TimeConfHTML += "<input readonly style=width:auto name='system-time' type='datetime-local' value='"+systimeStr+"'>";
+    TimeConfHTML += " <button onclick=location.reload() style=width:auto type=button> Refresh </button></label><br>";
 
-    PixieConfHTML += "<iframe name='dummyframe' id='dummyframe' style='display: none;'></iframe><form action='/save-tz' target='dummyframe' method='POST'>";
+    TimeConfHTML += "<iframe name='dummyframe' id='dummyframe' style='display: none;'></iframe><form action='/save-tz' target='dummyframe' method='POST'>";
 
     //const char *currentTimeZone = "Europe/Paris";
-    PixieConfHTML += "<label for='timezone'>Time Zone</label>";
-    PixieConfHTML += "<select id='timezone' name='timezone'>";
+    TimeConfHTML += "<label for='timezone'>Time Zone</label>";
+    TimeConfHTML += "<select id='timezone' name='timezone'>";
     for(int i = 0; i < TZ::zones(); i += 2) {
       bool selected = (strcmp(TZ::tzName, TZ::timezones[i]) == 0);
-      PixieConfHTML += "<option value='"+ String(i) +"'" + String(selected ? "selected":"") + ">"+ String( TZ::timezones[i]) +"</option>";
+      TimeConfHTML += "<option value='"+ String(i) +"'" + String(selected ? "selected":"") + ">"+ String( TZ::timezones[i]) +"</option>";
     }
-    PixieConfHTML += "</select><br>";
+    TimeConfHTML += "</select><br>";
 
 
-    PixieConfHTML += "<label for='use-ntp-server'>Enable NTP Client</label> ";
-    PixieConfHTML += " <input value='1' type=checkbox name='use-ntp-server' id='use-ntp-server'" + String(NTPEnabled?"checked":"") + ">";
-    PixieConfHTML += "<br>";
+    TimeConfHTML += "<label for='use-ntp-server'>Enable NTP Client</label> ";
+    TimeConfHTML += " <input value='1' type=checkbox name='use-ntp-server' id='use-ntp-server'" + String(NTPEnabled?"checked":"") + ">";
+    TimeConfHTML += "<br>";
 
-    PixieConfHTML += "<div class='collapsed'>";
-    PixieConfHTML += "<label for='set-time'>Set Time ";
-    PixieConfHTML += "<input style=width:auto name='set-time' id='set-time' type='datetime-local' value='"+systimeStr+"'>";
-    PixieConfHTML += "</div>";
+    TimeConfHTML += "<div class='collapsed'>";
+    TimeConfHTML += "<label for='set-time'>Set Time ";
+    TimeConfHTML += "<input style=width:auto name='set-time' id='set-time' type='datetime-local' value='"+systimeStr+"'>";
+    TimeConfHTML += "</div>";
 
 
-    PixieConfHTML += "<div class='collapsable'>";
+    TimeConfHTML += "<div class='collapsable'>";
 
-    PixieConfHTML += "<h2>NTP Client Setup</h2>";
+    TimeConfHTML += "<h2>NTP Client Setup</h2>";
 
-    PixieConfHTML += "<label for='enable-dst'>Auto-adjust clock for DST</label> ";
-    PixieConfHTML += " <input value='1' type=checkbox name='enable-dst' id='enable-dst'" + String(DSTEnabled?"checked":"") + ">";
-    PixieConfHTML += "<br>";
+    TimeConfHTML += "<label for='enable-dst'>Auto-adjust clock for DST</label> ";
+    TimeConfHTML += " <input value='1' type=checkbox name='enable-dst' id='enable-dst'" + String(DSTEnabled?"checked":"") + ">";
+    TimeConfHTML += "<br>";
 
-    PixieConfHTML += "<label for='ntp-server'>Server:</label>";
-    //PixieConfHTML += "<input list='ntp-server-list' id='ntp-server' name='ntp-server' placeholder='pool.ntp.org'";
-    //PixieConfHTML += " value='"+ NTP::server() +"'>";
-    PixieConfHTML += "<select id='ntp-server-list' name='ntp-server'>";
+    TimeConfHTML += "<label for='ntp-server'>Server:</label>";
+    //TimeConfHTML += "<input list='ntp-server-list' id='ntp-server' name='ntp-server' placeholder='pool.ntp.org'";
+    //TimeConfHTML += " value='"+ NTP::server() +"'>";
+    TimeConfHTML += "<select id='ntp-server-list' name='ntp-server'>";
     size_t servers_count = sizeof( NTP::Servers ) / sizeof( NTP::Server );
     uint8_t server_id = NTP::getServerId();
     for( int i=0; i<servers_count; i++ ) {
-      PixieConfHTML += "<option value='"+ String(i) +"'" + String(i==server_id ? "selected":"") + ">"+ String(NTP::Servers[i].name) +"("+ String(NTP::Servers[i].addr) +")</option>";
+      TimeConfHTML += "<option value='"+ String(i) +"'" + String(i==server_id ? "selected":"") + ">"+ String(NTP::Servers[i].name) +"("+ String(NTP::Servers[i].addr) +")</option>";
     }
-    PixieConfHTML += "</select><br>";
+    TimeConfHTML += "</select><br>";
 
-    PixieConfHTML += "<label for='ntp-server-interval'>Sync interval:</label>";
-    PixieConfHTML += "<select id='ntp-server-interval' name='ntp-server-interval'>";
-    PixieConfHTML += "<option value=60>Hourly</option>";
-    PixieConfHTML += "<option value=14400>Daily</option>";
-    PixieConfHTML += "<option value=10080>Weekly</option>";
-    PixieConfHTML += "</select><br>";
+    TimeConfHTML += "<label for='ntp-server-interval'>Sync interval:</label>";
+    TimeConfHTML += "<select id='ntp-server-interval' name='ntp-server-interval'>";
+    TimeConfHTML += "<option value=60>Hourly</option>";
+    TimeConfHTML += "<option value=14400>Daily</option>";
+    TimeConfHTML += "<option value=10080>Weekly</option>";
+    TimeConfHTML += "</select><br>";
 
-    PixieConfHTML += "</div>";
+    TimeConfHTML += "</div>";
 
-    PixieConfHTML += "<button type=submit>Submit</button>";
-    PixieConfHTML += "</form>";
+    TimeConfHTML += "<button type=submit>Submit</button>";
+    TimeConfHTML += "</form>";
 
-    PixieConfHTML += getTemplate(HTML_END);
+    TimeConfHTML += getTemplate(HTML_END);
 
-    _wifiManager->server->send(200, "text/html", PixieConfHTML.c_str() );
+    _wifiManager->server->send(200, "text/html", TimeConfHTML.c_str() );
+
+    TimeConfHTML = String();
   }
 
 
@@ -242,9 +244,8 @@ namespace WiFiManagerNS
       }
 
       TZ::setTzName( timezone.c_str() );
-      String tz = TZ::getTzByLocation( String(TZ::tzName) );
+      const char* tz = TZ::getTzByLocation( TZ::tzName );
       TZ::configTimeWithTz( tz, NTP::server() );
-      //printLocalTime(1, 1000);
     }
 
     if( NTPEnabled ) {

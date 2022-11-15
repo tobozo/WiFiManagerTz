@@ -47,7 +47,7 @@ namespace NTP
 
   bool setServer( uint8_t id );
   uint8_t getServerId();
-  String server();
+  const char* server();
 
 
   // TODO: extend this list
