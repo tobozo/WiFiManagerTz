@@ -27,7 +27,7 @@
 #pragma once
 
 #include <Arduino.h>
-
+#include <TimeLib.h> // https://github.com/PaulStoffregen/Time
 
 namespace NTP
 {

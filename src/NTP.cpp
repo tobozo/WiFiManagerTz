@@ -24,7 +24,6 @@
  *
 \*/
 
-#include <TimeLib.h>
 #include "prefs.hpp"
 #include "NTP.hpp"
 #include "sntp.h"
