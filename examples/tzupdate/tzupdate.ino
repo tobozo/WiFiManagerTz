@@ -30,6 +30,8 @@
 
 WiFiManager wifiManager;
 
+bool configSaved = false;
+
 
 void setup()
 {
@@ -37,30 +39,50 @@ void setup()
   delay(1000);
   Serial.println("Welcome to the tzupdate example");
 
+  Serial.print("Mac Address: ");
+  Serial.println(WiFi.macAddress());
+
+  // wifiManager.resetSettings();
+
   // attach NTP/TZ/Clock-setup page to the WiFi Manager
   WiFiManagerNS::init( &wifiManager );
-
-  //wifiManager.resetSettings();
 
   // /!\ make sure "custom" is listed there as it's required to pull the "Setup Clock" button
   std::vector<const char *> menu = {"wifi", "info", "custom", "param", "sep", "restart", "exit"};
   wifiManager.setMenu(menu);
 
-  wifiManager.setConfigPortalBlocking(false);
-  wifiManager.setConfigPortalTimeout(600);
+  wifiManager.setConnectRetries(10);          // necessary with sluggish routers and/or hidden AP
+  wifiManager.setCleanConnect(true);          // ESP32 wants this
+  wifiManager.setConfigPortalBlocking(false); // /!\ false=use "wifiManager.process();" in the loop()
+  wifiManager.setConfigPortalTimeout(120);    // will wait 2mn before closing portal
+  wifiManager.setSaveConfigCallback([](){ configSaved = true;}); // restart on credentials save, ESP32 doesn't like to switch between AP/STA
 
   if(wifiManager.autoConnect("AutoConnectAP", "12345678")){
-    Serial.println("connected...yeey :)");
-  }else {
-    Serial.println("Configportal running");
+    Serial.print("Connected to Access Point, visit http://");
+    Serial.print(WiFi.localIP());
+    Serial.println(" to setup the clock or change WiFi settings");
+    wifiManager.startConfigPortal();
+  } else {
+
+    Serial.println("Configportal is running, no WiFi has been set yet");
   }
 
-  Serial.println("local ip");
-  Serial.println(WiFi.localIP());
+  if(WiFi.status() == WL_CONNECTED){
+
+    WiFiManagerNS::configTime();
+  }
+
 }
 
 
 void loop()
 {
   wifiManager.process();
+
+  // TODO: detect reset query from button
+  // if( long_button_press ) {
+  //    wifiManager.resetSettings();
+  //    ESP.restart();
+  // }
+
 }

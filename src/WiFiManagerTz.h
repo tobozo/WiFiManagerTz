@@ -29,14 +29,19 @@ namespace WiFiManagerNS
     _wifiManager->setWebServerCallback(bindServerCallback);
     _wifiManager->setCustomMenuHTML( menuhtml );
     _wifiManager->setClass("invert");
+    // _wifiManager->wm.setDarkMode(true);
     TZ::loadPrefs();
     prefs::getBool("NTPEnabled", &NTPEnabled, false );
     if( NTPEnabled ) {
       NTP::loadPrefs();
-      Serial.printf("Setting up NTP:%s, TZ:%s\n", NTP::server().c_str(), TZ::tzName );
-      String tz = TZ::getTzByLocation( String(TZ::tzName) );
-      TZ::configTimeWithTz( tz, NTP::server() );
     }
+  }
+
+  void configTime()
+  {
+    String tz = TZ::getTzByLocation( String(TZ::tzName) );
+    Serial.printf("Setting up time: NTPServer=%s, TZ-Name=%s, TZ=%s\n", NTP::server().c_str(), TZ::tzName, tz.c_str() );
+    TZ::configTimeWithTz( tz, NTP::server() );
   }
 
 
@@ -217,13 +222,13 @@ namespace WiFiManagerNS
     if( _wifiManager->server->hasArg("use-ntp-server") ) {
       String UseNtpServer = _wifiManager->server->arg("use-ntp-server");
       log_d("UseNtpServer: %s", UseNtpServer.c_str() );
-      _NTPEnabled = UseNtpServer=="1";
-      NTPEnabled = _NTPEnabled;
+      uint8_t useNtpServer = atoi( UseNtpServer.c_str() );
+      NTPEnabled = useNtpServer==1;
     } else {
       NTPEnabled = false;
     }
     if( _NTPEnabled != NTPEnabled ) {
-      prefs::setBool("NTPEnabled", !NTPEnabled );
+      prefs::setBool("NTPEnabled", NTPEnabled );
     }
 
     if( _wifiManager->server->hasArg("timezone") ) {
