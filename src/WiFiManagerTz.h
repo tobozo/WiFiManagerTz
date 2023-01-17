@@ -210,7 +210,7 @@ namespace WiFiManagerNS
 
     TimeConfHTML += getTemplate(HTML_END);
 
-    _wifiManager->server->send(200, "text/html", TimeConfHTML.c_str() );
+    _wifiManager->server->send_P( 200, "text/html", TimeConfHTML.c_str(), TimeConfHTML.length() );
 
     TimeConfHTML = String();
   }
