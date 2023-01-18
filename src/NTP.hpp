@@ -29,39 +29,49 @@
 #include <Arduino.h>
 #include <TimeLib.h> // https://github.com/PaulStoffregen/Time
 
-namespace NTP
+namespace WiFiManagerNS
 {
 
-  struct Server
+  namespace NTP
   {
-    const char* name;
-    const char* addr;
+
+    struct Server
+    {
+      const char* name;
+      const char* addr;
+    };
+
+
+    void setSyncDelay( unsigned int minutes );
+    unsigned int getSyncDelay();
+
+    void loadPrefServer();
+    void loadPrefs();
+
+    bool setServer( uint8_t id );
+    uint8_t getServerId();
+    const char* server();
+
+
+    typedef void(*onTimeAvailable_fn)(struct timeval *t);
+
+    void onTimeAvailable( onTimeAvailable_fn fn );
+
+
+
+    // TODO: extend this list
+    const Server Servers[] =
+    {
+      { "Global",        "pool.ntp.org" },
+      { "Africa",        "africa.pool.ntp.org" },
+      { "Asia",          "asia.pool.ntp.org" },
+      { "Europe",        "europe.pool.ntp.org" },
+      { "North America", "north-america.pool.ntp.org" },
+      { "Oceania",       "oceania.pool.ntp.org" },
+      { "South America", "south-america.pool.ntp.org" },
+      // { "DHCP",          "0.0.0.0" }, // TODO: enable private NTP servers
+    };
+
   };
 
-
-  void setSyncDelay( unsigned int minutes );
-  unsigned int getSyncDelay();
-
-  void loadPrefServer();
-  void loadPrefs();
-
-  bool setServer( uint8_t id );
-  uint8_t getServerId();
-  const char* server();
-
-
-  // TODO: extend this list
-  const Server Servers[] =
-  {
-    { "Global",        "pool.ntp.org" },
-    { "Africa",        "africa.pool.ntp.org" },
-    { "Asia",          "asia.pool.ntp.org" },
-    { "Europe",        "europe.pool.ntp.org" },
-    { "North America", "north-america.pool.ntp.org" },
-    { "Oceania",       "oceania.pool.ntp.org" },
-    { "South America", "south-america.pool.ntp.org" },
-    // { "DHCP",          "0.0.0.0" }, // TODO: enable private NTP servers
-  };
-
-};
-
+}

@@ -28,16 +28,21 @@
 
 #include <Arduino.h>
 
-namespace TZ
+namespace WiFiManagerNS
 {
-  void loadPrefs();
-  extern char tzName[255];
-  extern const size_t count;
-  void setTzName( const char* name );
-  extern const char* defaultTzName;
-  extern const char *timezones[];
-  size_t zones();// count;
-  const char* getLocation(int &index, const char *prefix = 0);
-  const char* getTzByLocation(const char* location);
-  void configTimeWithTz(const char* tz, const char* ntp_addr);
-};
+
+  namespace TZ
+  {
+    void loadPrefs();
+    extern char tzName[255];
+    extern const size_t count;
+    void setTzName( const char* name );
+    extern const char* defaultTzName;
+    extern const char *timezones[];
+    size_t zones();// count;
+    const char* getLocation(int &index, const char *prefix = 0);
+    const char* getTzByLocation(const char* location);
+    void configTimeWithTz(const char* tz, const char* ntp_addr);
+  };
+
+}

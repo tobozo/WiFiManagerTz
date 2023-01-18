@@ -30,18 +30,24 @@
 
 #define PREF_NAMESPACE "wm"
 
-namespace prefs
-{
-  void reset();
-  void set( const char *name, const char *value, size_t len );
-  void get( const char *name, char *dest, size_t max_len, const char *default_value );
-  void setUChar( const char *name, uint8_t value );
-  void getUChar( const char *name, uint8_t *dest, uint8_t default_value );
-  void setFloat( const char *name, float value );
-  void getFloat( const char *name, float *dest, float default_value );
-  void setBool( const char* key, bool value);
-  void getBool( const char *name, bool *dest, bool default_value );
-  void setUInt( const char* name, unsigned int value);
-  void getUInt( const char *name, unsigned int *dest, unsigned int default_value );
 
-};
+namespace WiFiManagerNS
+{
+
+  namespace prefs
+  {
+    void reset();
+    void set( const char *name, const char *value, size_t len );
+    void get( const char *name, char *dest, size_t max_len, const char *default_value );
+    void setUChar( const char *name, uint8_t value );
+    void getUChar( const char *name, uint8_t *dest, uint8_t default_value );
+    void setFloat( const char *name, float value );
+    void getFloat( const char *name, float *dest, float default_value );
+    void setBool( const char* key, bool value);
+    void getBool( const char *name, bool *dest, bool default_value );
+    void setUInt( const char* name, unsigned int value);
+    void getUInt( const char *name, unsigned int *dest, unsigned int default_value );
+
+  };
+
+}
