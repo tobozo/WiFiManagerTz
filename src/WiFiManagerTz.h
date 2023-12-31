@@ -15,9 +15,7 @@ namespace WiFiManagerNS
   String TimeConfHTML;
   char systime[64];
 
-  typedef void(*faviconCallback_t)();
-  faviconCallback_t handleFavicon = nullptr;
-  void handleFavicon_default();
+  std::function<void()> _webserverPreCallback;
   void bindServerCallback();
 
 
@@ -128,9 +126,11 @@ namespace WiFiManagerNS
     WiFiManager *_wifiManager;
 
 
-    void init(WiFiManager *manager, faviconCallback_t faviconCB=handleFavicon_default)
+
+    void init(WiFiManager *manager, std::function<void()> webserverPreCallback)
     {
-      handleFavicon = faviconCB;
+      _webserverPreCallback = webserverPreCallback;
+
       _wifiManager = manager;
       _wifiManager->setWebServerCallback(bindServerCallback);
       _wifiManager->setCustomMenuHTML( menuhtml );
@@ -144,7 +144,7 @@ namespace WiFiManagerNS
     }
 
 
-    void handleFavicon_default()
+    void handleFavicon()
     {
       _wifiManager->server->send_P(200, "image/gif", favicon, sizeof(favicon) );
     }
@@ -305,11 +305,13 @@ namespace WiFiManagerNS
 
     void bindServerCallback()
     {
+      if (_webserverPreCallback != NULL) {
+        _webserverPreCallback(); // callback to add/override server routes
+      }
+
       _wifiManager->server->on("/custom", handleRoute);
       _wifiManager->server->on("/save-tz", handleValues);
-      if( handleFavicon ) {
-        _wifiManager->server->on("/favicon.ico", handleFavicon);
-      }
+      _wifiManager->server->on("/favicon.ico", handleFavicon);
     }
 
   #endif

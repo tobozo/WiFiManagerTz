@@ -20,8 +20,7 @@ void setup()
   WiFiManager wifiManager;
 
   WiFiManagerNS::init( &wifiManager );
-  // WiFiManagerNS::init( &wifiManager, nullptr ); // using nullptr to prevent WiFiManagerTz from overwriting WiFiManager favicon
-  // WiFiManagerNS::init( &wifiManager, myFaviconCallback ); // using a custom callback to emit favicon
+  // WiFiManagerNS::init( &wifiManager, webserverPreCallback ); // using a custom callback add/override server routes
 
   // /!\ make sure "custom" is listed there as it's required to pull the "Setup Clock" button
   std::vector<const char *> menu = {"wifi", "info", "custom", "param", "sep", "restart", "exit"};
