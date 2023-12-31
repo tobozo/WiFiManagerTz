@@ -55,8 +55,6 @@ namespace WiFiManagerNS
 
   #else //  defined WiFiManager_h
 
-    #include "strings_en.h"
-
 
     constexpr const char* menuhtml = "<form action='/custom' method='get'><button>Setup Clock</button></form><br/>\n";
 
