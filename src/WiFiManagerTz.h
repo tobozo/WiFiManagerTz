@@ -10,8 +10,6 @@
 namespace WiFiManagerNS
 {
 
-  #include "strings_en.h"
-
   bool NTPEnabled = false; // overriden by prefs
   bool DSTEnabled = true;
   String TimeConfHTML;
