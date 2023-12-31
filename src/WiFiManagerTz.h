@@ -18,11 +18,14 @@ namespace WiFiManagerNS
   constexpr const char* menuhtml = "<form action='/custom' method='get'><button>Setup Clock</button></form><br/>\n";
 
   WiFiManager *_wifiManager;
+  std::function<void()> _webserverPreCallback;
 
   void bindServerCallback();
 
-  void init(WiFiManager *manager)
+  void init(WiFiManager *manager, std::function<void()> webserverPreCallback)
   {
+    _webserverPreCallback = webserverPreCallback;
+
     _wifiManager = manager;
     _wifiManager->setWebServerCallback(bindServerCallback);
     _wifiManager->setCustomMenuHTML( menuhtml );
@@ -280,6 +283,10 @@ namespace WiFiManagerNS
 
   void bindServerCallback()
   {
+    if (_webserverPreCallback != NULL) {
+      _webserverPreCallback(); // @CALLBACK
+    }
+
     _wifiManager->server->on("/custom", handleRoute);
     _wifiManager->server->on("/save-tz", handleValues);
     _wifiManager->server->on("/favicon.ico", handleFavicon);
