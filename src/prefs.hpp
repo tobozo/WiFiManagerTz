@@ -27,7 +27,15 @@
 #pragma once
 
 #include <Arduino.h>
-#include <Preferences.h>
+#if defined ESP32
+  #include <Preferences.h>
+#else
+  #include <EEPROM.h>
+#endif
+
+#if !defined(log_d)
+  #define log_d printf
+#endif
 
 #define PREF_NAMESPACE "wm"
 

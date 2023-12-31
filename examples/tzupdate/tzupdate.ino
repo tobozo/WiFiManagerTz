@@ -33,16 +33,18 @@ WiFiManager wifiManager;
 bool configSaved = false;
 
 
-// Optional callback function, fired when NTP gets updated.
-// Used to print the updated time or adjust an external RTC module.
-void on_time_available(struct timeval *t)
-{
-  Serial.println("Received time adjustment from NTP");
-  struct tm timeInfo;
-  getLocalTime(&timeInfo, 1000);
-  Serial.println(&timeInfo, "%A, %B %d %Y %H:%M:%S zone %Z %z ");
-  // RTC.adjust( &timeInfo );
-}
+#if defined ESP32
+  // Optional callback function, fired when NTP gets updated.
+  // Used to print the updated time or adjust an external RTC module.
+  void on_time_available(struct timeval *t)
+  {
+    Serial.println("Received time adjustment from NTP");
+    struct tm timeInfo;
+    getLocalTime(&timeInfo, 1000);
+    Serial.println(&timeInfo, "%A, %B %d %Y %H:%M:%S zone %Z %z ");
+    // RTC.adjust( &timeInfo );
+  }
+#endif
 
 
 
@@ -57,8 +59,10 @@ void setup()
 
   // wifiManager.resetSettings();
 
-  // optionally attach external RTC update callback
-  WiFiManagerNS::NTP::onTimeAvailable( &on_time_available );
+  #if defined ESP32
+    // optionally attach external RTC update callback
+    WiFiManagerNS::NTP::onTimeAvailable( &on_time_available );
+  #endif
 
   // attach NTP/TZ/Clock-setup page to the WiFi Manager
   WiFiManagerNS::init( &wifiManager, nullptr );

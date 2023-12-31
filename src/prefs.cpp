@@ -32,7 +32,9 @@
 namespace WiFiManagerNS
 {
 
-  Preferences _prefs;
+  #if defined ESP32
+    Preferences _prefs;
+  #endif
 
   namespace prefs
   {
@@ -72,152 +74,154 @@ namespace WiFiManagerNS
           // case NTP_ENABLED : return prefs::getBool(  NTP_SYNC_ENABLED, false );
           // case TIMEZONE_ID : return prefs::getUInt(  TZ_ID, val, 0 );
         #elif defined ESP8266
-          case NTP_DELAYMIN: return EEPROM.read( NTP_DELAYMIN, val );
-          case NTP_ZONE_KEY: return EEPROM.read( NTP_ZONE_KEY, val );
-          case NTP_ENABLED : return EEPROM.read( NTP_ENABLED, val );
-          case TIMEZONE_ID : return EEPROM.read( TIMEZONE_ID, val );
+          case NTP_DELAYMIN: return EEPROM.read( NTP_DELAYMIN );
+          case NTP_ZONE_KEY: return EEPROM.read( NTP_ZONE_KEY );
+          case NTP_ENABLED : return EEPROM.read( NTP_ENABLED );
+          case TIMEZONE_ID : return EEPROM.read( TIMEZONE_ID );
+          default: return 0;
         #endif
       }
     }
 
 
+    #if defined ESP32
 
-    void reset()
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      _prefs.clear();
-      _prefs.end();
-    }
-
-
-    void set( const char *name, const char *value, size_t len )
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      char buf[len+2] = {0};
-      snprintf( buf, len+1, "%s", value );
-      if( _prefs.putString(name, buf) ) {
-        log_d("[Pref] '%s' Saved: char[%d]", name, len-1 );
-      } else {
-        log_d("[Pref] '%s' Saving failed!  (char[%d])", name, len-1 );
+      void reset()
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        _prefs.clear();
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void get( const char *name, char *dest, size_t max_len, const char *default_value )
-    {
-      _prefs.begin(PREF_NAMESPACE, true );
-      size_t len = _prefs.getString(name, dest, max_len );
-      if( len > 0 ) {
-        log_d("[Pref] '%s' Thawed: char[%d]", name, len );
-      } else {
-        len = strlen(default_value)+1;
-        snprintf( dest, max_len, "%s", default_value );
-        log_d("[Pref] '%s' Defaulted to '%s')", name, default_value );
+      void set( const char *name, const char *value, size_t len )
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        char buf[len+2] = {0};
+        snprintf( buf, len+1, "%s", value );
+        if( _prefs.putString(name, buf) ) {
+          log_d("[Pref] '%s' Saved: char[%d]", name, len-1 );
+        } else {
+          log_d("[Pref] '%s' Saving failed!  (char[%d])", name, len-1 );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void setUChar( const char *name, uint8_t value )
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      if( _prefs.putUChar(name, value) ) {
-        log_d("[Pref] Saved: '%s' => %d", name, value );
-      } else {
-        log_d("[Pref] Saving failed! '%s' => %d", name, value );
+      void get( const char *name, char *dest, size_t max_len, const char *default_value )
+      {
+        _prefs.begin(PREF_NAMESPACE, true );
+        size_t len = _prefs.getString(name, dest, max_len );
+        if( len > 0 ) {
+          log_d("[Pref] '%s' Thawed: char[%d]", name, len );
+        } else {
+          len = strlen(default_value)+1;
+          snprintf( dest, max_len, "%s", default_value );
+          log_d("[Pref] '%s' Defaulted to '%s')", name, default_value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void getUChar( const char *name, uint8_t *dest, uint8_t default_value )
-    {
-      _prefs.begin(PREF_NAMESPACE, true );
-      *dest = _prefs.getUChar(name, default_value );
-      if( *dest != default_value ) {
-        log_d("[Pref] Thawed: '%s' => %d", name, *dest );
-      } else {
-        log_d("[Pref] Defaulted: '%s' => %d", name, default_value );
+      void setUChar( const char *name, uint8_t value )
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        if( _prefs.putUChar(name, value) ) {
+          log_d("[Pref] Saved: '%s' => %d", name, value );
+        } else {
+          log_d("[Pref] Saving failed! '%s' => %d", name, value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void setFloat( const char *name, float value )
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      if( _prefs.putFloat(name, value) ) {
-        log_d("[Pref] Saved: '%s' => %.2f", name, value );
-      } else {
-        log_d("[Pref] Saving failed! '%s' => %.2f", name, value );
+      void getUChar( const char *name, uint8_t *dest, uint8_t default_value )
+      {
+        _prefs.begin(PREF_NAMESPACE, true );
+        *dest = _prefs.getUChar(name, default_value );
+        if( *dest != default_value ) {
+          log_d("[Pref] Thawed: '%s' => %d", name, *dest );
+        } else {
+          log_d("[Pref] Defaulted: '%s' => %d", name, default_value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void getFloat( const char *name, float *dest, float default_value )
-    {
-      _prefs.begin(PREF_NAMESPACE, true );
-      *dest = _prefs.getFloat(name, default_value );
-      if( *dest != default_value ) {
-        log_d("[Pref] Thawed: '%s' => %.2f", name, *dest );
-      } else {
-        log_d("[Pref] Defaulted: '%s' => %.2f", name, default_value );
+      void setFloat( const char *name, float value )
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        if( _prefs.putFloat(name, value) ) {
+          log_d("[Pref] Saved: '%s' => %.2f", name, value );
+        } else {
+          log_d("[Pref] Saving failed! '%s' => %.2f", name, value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void setBool(const char* name, bool value)
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      if( _prefs.putBool(name, value) ) {
-        log_d("[Pref] Saved: '%s' => %s", name, value?"true":"false" );
-      } else {
-        log_d("[Pref] Saving failed! '%s' => %s", name, value?"true":"false" );
+      void getFloat( const char *name, float *dest, float default_value )
+      {
+        _prefs.begin(PREF_NAMESPACE, true );
+        *dest = _prefs.getFloat(name, default_value );
+        if( *dest != default_value ) {
+          log_d("[Pref] Thawed: '%s' => %.2f", name, *dest );
+        } else {
+          log_d("[Pref] Defaulted: '%s' => %.2f", name, default_value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void getBool( const char *name, bool *dest, bool default_value )
-    {
-      _prefs.begin(PREF_NAMESPACE, true );
-      *dest = _prefs.getBool(name, default_value );
-      if( *dest != default_value ) {
-        log_d("[Pref] Thawed: '%s' => %s", name, *dest?"true":"false" );
-      } else {
-        log_d("[Pref] Defaulted: '%s' => %s", name, default_value?"true":"false" );
+      void setBool(const char* name, bool value)
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        if( _prefs.putBool(name, value) ) {
+          log_d("[Pref] Saved: '%s' => %s", name, value?"true":"false" );
+        } else {
+          log_d("[Pref] Saving failed! '%s' => %s", name, value?"true":"false" );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void setUInt(  const char* name, unsigned int value)
-    {
-      _prefs.begin(PREF_NAMESPACE, false );
-      if( _prefs.putUInt(name, value) ) {
-        log_d("[Pref] Saved: '%s' => %d", name, value );
-      } else {
-        log_d("[Pref] Saving failed! '%s' => %d", name, value );
+      void getBool( const char *name, bool *dest, bool default_value )
+      {
+        _prefs.begin(PREF_NAMESPACE, true );
+        *dest = _prefs.getBool(name, default_value );
+        if( *dest != default_value ) {
+          log_d("[Pref] Thawed: '%s' => %s", name, *dest?"true":"false" );
+        } else {
+          log_d("[Pref] Defaulted: '%s' => %s", name, default_value?"true":"false" );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
 
-    void getUInt(  const char *name, unsigned int *dest, unsigned int default_value )
-    {
-      _prefs.begin(PREF_NAMESPACE, true );
-      *dest = _prefs.getUInt(name, default_value );
-      if( *dest != default_value ) {
-        log_d("[Pref] Thawed: '%s' => %d", name, *dest );
-      } else {
-        log_d("[Pref] Defaulted: '%s' => %d", name, default_value );
+      void setUInt(  const char* name, unsigned int value)
+      {
+        _prefs.begin(PREF_NAMESPACE, false );
+        if( _prefs.putUInt(name, value) ) {
+          log_d("[Pref] Saved: '%s' => %d", name, value );
+        } else {
+          log_d("[Pref] Saving failed! '%s' => %d", name, value );
+        }
+        _prefs.end();
       }
-      _prefs.end();
-    }
 
+
+      void getUInt(  const char *name, unsigned int *dest, unsigned int default_value )
+      {
+        _prefs.begin(PREF_NAMESPACE, true );
+        *dest = _prefs.getUInt(name, default_value );
+        if( *dest != default_value ) {
+          log_d("[Pref] Thawed: '%s' => %d", name, *dest );
+        } else {
+          log_d("[Pref] Defaulted: '%s' => %d", name, default_value );
+        }
+        _prefs.end();
+      }
+    #endif
 
   };
 

@@ -42,8 +42,7 @@ namespace WiFiManagerNS
     };
 
 
-    void setSyncDelay( unsigned int minutes );
-    unsigned int getSyncDelay(); // minutes
+
 
     void loadPrefServer();
     void loadPrefs();
@@ -52,10 +51,14 @@ namespace WiFiManagerNS
     uint8_t getServerId();
     const char* server();
 
+    #if defined ESP32
+      void setSyncDelay( unsigned int minutes );
+      unsigned int getSyncDelay(); // minutes
 
-    typedef void(*onTimeAvailable_fn)(struct timeval *t);
+      typedef void(*onTimeAvailable_fn)(struct timeval *t);
 
-    void onTimeAvailable( onTimeAvailable_fn fn );
+      void onTimeAvailable( onTimeAvailable_fn fn );
+    #endif
 
 
 

@@ -5,8 +5,6 @@
 #include "NTP.hpp"
 #include "TZ.hpp"
 
-
-
 namespace WiFiManagerNS
 {
 
@@ -135,7 +133,11 @@ namespace WiFiManagerNS
       _wifiManager->setClass("invert");
       // _wifiManager->wm.setDarkMode(true);
       TZ::loadPrefs();
-      prefs::getBool("NTPEnabled", &NTPEnabled, false );
+      #if defined ESP32
+        prefs::getBool("NTPEnabled", &NTPEnabled, false );
+      #else
+        NTPEnabled = prefs::getPref(prefs::NTP_ENABLED);
+      #endif
       if( NTPEnabled ) {
         NTP::loadPrefs();
       }
@@ -181,7 +183,7 @@ namespace WiFiManagerNS
       //const char *currentTimeZone = "Europe/Paris";
       TimeConfHTML += "<label for='timezone'>Time Zone</label>";
       TimeConfHTML += "<select id='timezone' name='timezone'>";
-      for(int i = 0; i < TZ::zones(); i += 2) {
+      for(size_t i = 0; i < TZ::zones(); i += 2) {
         bool selected = (strcmp(TZ::tzName, TZ::timezones[i]) == 0);
         TimeConfHTML += "<option value='"+ String(i) +"'" + String(selected ? "selected":"") + ">"+ String( TZ::timezones[i]) +"</option>";
       }
@@ -212,17 +214,19 @@ namespace WiFiManagerNS
       TimeConfHTML += "<select id='ntp-server-list' name='ntp-server'>";
       size_t servers_count = sizeof( NTP::Servers ) / sizeof( NTP::Server );
       uint8_t server_id = NTP::getServerId();
-      for( int i=0; i<servers_count; i++ ) {
+      for( size_t i=0; i<servers_count; i++ ) {
         TimeConfHTML += "<option value='"+ String(i) +"'" + String(i==server_id ? "selected":"") + ">"+ String(NTP::Servers[i].name) +"("+ String(NTP::Servers[i].addr) +")</option>";
       }
       TimeConfHTML += "</select><br>";
 
-      TimeConfHTML += "<label for='ntp-server-interval'>Sync interval:</label>";
-      TimeConfHTML += "<select id='ntp-server-interval' name='ntp-server-interval'>";
-      TimeConfHTML += "<option value=60>Hourly</option>";
-      TimeConfHTML += "<option value=14400>Daily</option>";
-      TimeConfHTML += "<option value=10080>Weekly</option>";
-      TimeConfHTML += "</select><br>";
+      #if defined ESP32
+        TimeConfHTML += "<label for='ntp-server-interval'>Sync interval:</label>";
+        TimeConfHTML += "<select id='ntp-server-interval' name='ntp-server-interval'>";
+        TimeConfHTML += "<option value=60>Hourly</option>";
+        TimeConfHTML += "<option value=14400>Daily</option>";
+        TimeConfHTML += "<option value=10080>Weekly</option>";
+        TimeConfHTML += "</select><br>";
+      #endif
 
       TimeConfHTML += "</div>";
 
@@ -251,7 +255,11 @@ namespace WiFiManagerNS
         NTPEnabled = false;
       }
       if( _NTPEnabled != NTPEnabled ) {
-        prefs::setBool("NTPEnabled", NTPEnabled );
+        #if defined ESP32
+          prefs::setBool("NTPEnabled", NTPEnabled );
+        #else
+          prefs::setPref(prefs::NTP_ENABLED, NTPEnabled );
+        #endif
       }
 
       if( _wifiManager->server->hasArg("timezone") ) {
@@ -290,7 +298,9 @@ namespace WiFiManagerNS
             default:
               serverInterval = 14400;
           }
-          NTP::setSyncDelay( serverInterval );
+          #if defined ESP32
+            NTP::setSyncDelay( serverInterval );
+          #endif
         }
       }
 
