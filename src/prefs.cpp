@@ -25,8 +25,8 @@
 \*/
 
 #include "prefs.hpp"
+#include "TZ.hpp"
 
-#include <Preferences.h>
 
 
 namespace WiFiManagerNS
@@ -36,6 +36,51 @@ namespace WiFiManagerNS
 
   namespace prefs
   {
+
+
+    void setPref( pref_name_t pref_name, int val )
+    {
+      switch( pref_name )
+      {
+        #if defined ESP32
+          default: break;
+          // case NTP_DELAYMIN: prefs::setUInt(  NVS_NTP_DELAYMIN, val ); break;
+          // case NTP_ZONE_KEY: prefs::setUChar( NVS_NTPZONE_KEY, val ); break;
+          // case NTP_ENABLED : prefs::setBool(  NTP_SYNC_ENABLED, val ); break;
+          // case TIMEZONE_ID :
+          //   prefs::set( prefName, TZ::timezones[val], strlen(TZ::timezones[val]) );
+          //   prefs::setUInt( TZ_ID, val );
+          // break;
+        #elif defined ESP8266
+          case NTP_DELAYMIN: EEPROM.write( NTP_DELAYMIN, val ); EEPROM.commit(); break;
+          case NTP_ZONE_KEY: EEPROM.write( NTP_ZONE_KEY, val ); EEPROM.commit(); break;
+          case NTP_ENABLED : EEPROM.write( NTP_ENABLED, val );  EEPROM.commit(); break;
+          case TIMEZONE_ID : EEPROM.write( TIMEZONE_ID, val );  EEPROM.commit(); break;
+        #endif
+      }
+    }
+
+
+    int getPref(  pref_name_t pref_name )
+    {
+      switch( pref_name )
+      {
+        #if defined ESP32
+          default: return 0;
+          // case NTP_DELAYMIN: return prefs::getUInt(  NVS_NTP_DELAYMIN, 60 );
+          // case NTP_ZONE_KEY: prefs::getUChar( NVS_NTPZONE_KEY,  &currentServer, currentServer ); return 0;
+          // case NTP_ENABLED : return prefs::getBool(  NTP_SYNC_ENABLED, false );
+          // case TIMEZONE_ID : return prefs::getUInt(  TZ_ID, val, 0 );
+        #elif defined ESP8266
+          case NTP_DELAYMIN: return EEPROM.read( NTP_DELAYMIN, val );
+          case NTP_ZONE_KEY: return EEPROM.read( NTP_ZONE_KEY, val );
+          case NTP_ENABLED : return EEPROM.read( NTP_ENABLED, val );
+          case TIMEZONE_ID : return EEPROM.read( TIMEZONE_ID, val );
+        #endif
+      }
+    }
+
+
 
     void reset()
     {

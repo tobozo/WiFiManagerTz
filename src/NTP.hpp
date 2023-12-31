@@ -43,7 +43,7 @@ namespace WiFiManagerNS
 
 
     void setSyncDelay( unsigned int minutes );
-    unsigned int getSyncDelay();
+    unsigned int getSyncDelay(); // minutes
 
     void loadPrefServer();
     void loadPrefs();

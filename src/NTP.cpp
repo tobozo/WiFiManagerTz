@@ -26,7 +26,13 @@
 
 #include "prefs.hpp"
 #include "NTP.hpp"
-#include "sntp.h"
+#if __has_include("esp_sntp.h")
+  #include "esp_sntp.h"
+#elif __has_include("sntp.h")
+  #include "sntp.h"
+#else
+  #error "This library needs either esp_sntp.h or ntp.h from esp core"
+#endif
 
 
 namespace WiFiManagerNS
@@ -35,9 +41,7 @@ namespace WiFiManagerNS
   namespace NTP
   {
 
-    const char* NVS_DST_KEY      = "DST";
-    const char* NVS_NTPZONE_KEY  = "NTPZONE";
-    const char* NVS_NTP_DELAYMIN = "NTPDELAY";
+    using namespace WiFiManagerNS::prefs;
 
     const char* defaultServer = "pool.ntp.org";
     uint8_t currentServer = 0;
@@ -68,7 +72,7 @@ namespace WiFiManagerNS
     }
 
 
-    onTimeAvailable_fn timeavailable = &timeavailable_default;
+    static onTimeAvailable_fn timeavailable = &timeavailable_default;
 
     void onTimeAvailable( onTimeAvailable_fn fn )
     {

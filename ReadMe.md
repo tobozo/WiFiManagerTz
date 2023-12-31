@@ -20,6 +20,8 @@ void setup()
   WiFiManager wifiManager;
 
   WiFiManagerNS::init( &wifiManager );
+  // WiFiManagerNS::init( &wifiManager, nullptr ); // using nullptr to prevent WiFiManagerTz from overwriting WiFiManager favicon
+  // WiFiManagerNS::init( &wifiManager, myFaviconCallback ); // using a custom callback to emit favicon
 
   // /!\ make sure "custom" is listed there as it's required to pull the "Setup Clock" button
   std::vector<const char *> menu = {"wifi", "info", "custom", "param", "sep", "restart", "exit"};
@@ -40,7 +42,7 @@ I made this library in order to learn how to properly use the WiFiManager, and I
   - Add more examples
   - Implement minimal logic for external RTC modules coupling
   - Make the Time Setup page skinnable
-  - ESP8266 support
+  ~~- ESP8266 support~~
 
 
 ## Dependencies

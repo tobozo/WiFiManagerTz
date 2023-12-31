@@ -27,6 +27,7 @@
 \*/
 
 #include <Arduino.h>
+#include "prefs.hpp"
 
 namespace WiFiManagerNS
 {

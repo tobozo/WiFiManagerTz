@@ -24,7 +24,7 @@
  *
 \*/
 
-#include "prefs.hpp"
+
 #include <TZ.hpp>
 
 
@@ -34,9 +34,11 @@ namespace WiFiManagerNS
   namespace TZ
   {
 
-    constexpr const char* prefName = "TZNAME";
+    using namespace WiFiManagerNS::prefs;
+
     const char* defaultTzName = "UTC0";
     char tzName[255];
+    int tzId;
 
 
     size_t zones()
