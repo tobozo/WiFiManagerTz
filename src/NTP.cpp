@@ -26,7 +26,13 @@
 
 #include "prefs.hpp"
 #include "NTP.hpp"
-#include "sntp.h"
+#if __has_include("esp_sntp.h")
+  #include "esp_sntp.h"
+#elif __has_include("sntp.h")
+  #include "sntp.h"
+#else
+  #error "This library needs either esp_sntp.h or ntp.h from esp core"
+#endif
 
 
 namespace WiFiManagerNS
@@ -35,47 +41,48 @@ namespace WiFiManagerNS
   namespace NTP
   {
 
-    const char* NVS_DST_KEY      = "DST";
-    const char* NVS_NTPZONE_KEY  = "NTPZONE";
-    const char* NVS_NTP_DELAYMIN = "NTPDELAY";
+    using namespace WiFiManagerNS::prefs;
 
     const char* defaultServer = "pool.ntp.org";
     uint8_t currentServer = 0;
-    unsigned int sync_delay = 60; // minutes
 
-    unsigned int getSyncDelay()
-    {
-      return sync_delay;
-    }
+    #if defined ESP32
 
-    void setSyncDelay( unsigned int minutes )
-    {
-      if( sync_delay != minutes ) {
-        log_d("Setting NTP sync delay to #%d minutes", minutes );
-        prefs::setUInt(  NVS_NTP_DELAYMIN, minutes );
+      unsigned int sync_delay = 60; // minutes
+
+      unsigned int getSyncDelay()
+      {
+        return sync_delay;
       }
-      sync_delay = minutes;
-      sntp_set_sync_interval(sync_delay*60*1000);
-    }
 
-    // Callback function (get's called when time adjusts via NTP)
-    void timeavailable_default(struct timeval *t)
-    {
-      Serial.println("Got time adjustment from NTP!");
-      struct tm timeInfo;
-      getLocalTime(&timeInfo, 1000);
-      Serial.println(&timeInfo, "%A, %B %d %Y %H:%M:%S zone %Z %z ");
-    }
+      void setSyncDelay( unsigned int minutes )
+      {
+        if( sync_delay != minutes ) {
+          sync_delay = minutes;
+          log_d("Setting NTP sync delay to #%d minutes", minutes );
+          prefs::setUInt( NVS_NTP_DELAYMIN, minutes );
+        }
+        sntp_set_sync_interval(sync_delay*60*1000);
+      }
+
+      // Callback function (get's called when time adjusts via NTP)
+      void timeavailable_default(struct timeval *t)
+      {
+        Serial.println("Got time adjustment from NTP!");
+        struct tm timeInfo;
+        getLocalTime(&timeInfo, 1000);
+        Serial.println(&timeInfo, "%A, %B %d %Y %H:%M:%S zone %Z %z ");
+      }
 
 
-    onTimeAvailable_fn timeavailable = &timeavailable_default;
+      static onTimeAvailable_fn timeavailable = &timeavailable_default;
 
-    void onTimeAvailable( onTimeAvailable_fn fn )
-    {
-      log_d("Settting custom time notifier");
-      timeavailable = fn;
-    }
-
+      void onTimeAvailable( onTimeAvailable_fn fn )
+      {
+        log_d("Settting custom time notifier");
+        timeavailable = fn;
+      }
+    #endif
 
     bool setServer( uint8_t id )
     {
@@ -85,7 +92,12 @@ namespace WiFiManagerNS
         if( id != currentServer ) {
           currentServer = id;
           log_d("Setting NTP server to #%d ( %s / %s )", currentServer, Servers[currentServer].name, Servers[currentServer].addr );
-          prefs::setUChar( NVS_NTPZONE_KEY, currentServer );
+          #if defined ESP32
+            prefs::setUChar( NVS_NTPZONE_KEY, currentServer );
+          #else
+            prefs::setPref( NTP_ZONE_KEY, currentServer );
+          #endif
+
         }
         return true;
       }
@@ -114,11 +126,16 @@ namespace WiFiManagerNS
 
     void loadPrefs()
     {
-      prefs::getUChar( NVS_NTPZONE_KEY,  &currentServer, currentServer );
-      prefs::getUInt(  NVS_NTP_DELAYMIN, &sync_delay,    sync_delay );
-      if( timeavailable )
-        sntp_set_time_sync_notification_cb( timeavailable );
-      sntp_set_sync_interval(sync_delay*60*1000);
+      #if defined ESP32
+        prefs::getUChar( NVS_NTPZONE_KEY,  &currentServer, currentServer );
+        prefs::getUInt(  NVS_NTP_DELAYMIN, &sync_delay,    sync_delay );
+        if( timeavailable )
+          sntp_set_time_sync_notification_cb( timeavailable );
+        sntp_set_sync_interval(sync_delay*60*1000);
+      #else
+        currentServer = prefs::getPref( NTP_ZONE_KEY );
+        //sync_delay = (unsigned int)prefs::getPref( NTP_DELAYMIN );
+      #endif
     }
 
   };

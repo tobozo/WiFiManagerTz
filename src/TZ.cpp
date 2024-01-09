@@ -24,7 +24,7 @@
  *
 \*/
 
-#include "prefs.hpp"
+
 #include <TZ.hpp>
 
 
@@ -34,9 +34,11 @@ namespace WiFiManagerNS
   namespace TZ
   {
 
-    constexpr const char* prefName = "TZNAME";
+    using namespace WiFiManagerNS::prefs;
+
     const char* defaultTzName = "UTC0";
     char tzName[255];
+    int tzId;
 
 
     size_t zones()
@@ -47,14 +49,29 @@ namespace WiFiManagerNS
 
     void loadPrefs()
     {
-      prefs::get( prefName, tzName, 255, defaultTzName );
+      #if defined ESP32
+        prefs::get( prefName, tzName, 255, defaultTzName );
+      #else
+        tzId = prefs::getPref(TIMEZONE_ID);
+        sprintf(tzName, "%s", timezones[tzId] );
+      #endif
     }
 
 
     void setTzName( const char* name )
     {
       if( strcmp( tzName, name ) != 0 ) {
+      #if defined ESP32
         prefs::set( prefName, name, strlen(name) );
+      #else
+        for(size_t i=0;i<count;i++) {
+          if( strcmp(name, timezones[0])==0 ) {
+            tzId = i;
+            prefs::setPref(TIMEZONE_ID, tzId );
+          }
+        }
+      #endif
+
       }
       snprintf( tzName, 254, "%s", name );
     }
